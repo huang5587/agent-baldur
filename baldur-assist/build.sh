@@ -3,6 +3,7 @@ set -e
 cd "$(dirname "$0")"
 swiftc -o baldur-assist \
   Sources/ProjectPaths.swift \
+  Sources/PartyManager.swift \
   Sources/AudioRecorder.swift \
   Sources/ScreenCapture.swift \
   Sources/ServerClient.swift \

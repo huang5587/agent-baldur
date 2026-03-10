@@ -6,7 +6,7 @@
     "synergies": ""
   },
   "characters": {
-    "<CHARACTER_NAME>": {
+    "_template": {
       "race": "",
       "background": "",
       "class": "",
