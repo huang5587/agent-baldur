@@ -205,3 +205,10 @@ cython_debug/
 marimo/_static/
 marimo/_lsp/
 __marimo__/
+
+# Swift / baldur-assist
+.build/
+.swiftpm/
+baldur-assist/baldur-assist
+baldur-assist/temp/*.wav
+baldur-assist/temp/*.aiff
