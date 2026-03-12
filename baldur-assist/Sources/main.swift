@@ -10,6 +10,19 @@ var isRecording = false
 var processingRequest = false
 var eventTap: CFMachPort?
 
+func playSound(_ name: String) {
+    let projectDir = URL(fileURLWithPath: #filePath)
+        .deletingLastPathComponent()
+        .deletingLastPathComponent()
+    let soundPath = projectDir.appendingPathComponent("\(name).aiff").path
+
+    if let sound = NSSound(contentsOfFile: soundPath, byReference: true) {
+        sound.play()
+    } else {
+        print("[baldur-assist] Sound not found: \(soundPath)")
+    }
+}
+
 func handleHotkey() {
     if processingRequest {
         print("[baldur-assist] Still processing previous request, ignoring hotkey.")
@@ -20,17 +33,28 @@ func handleHotkey() {
         do {
             try recorder.startRecording()
             isRecording = true
-            NSSound.beep()
+            playSound("Bottle")
         } catch {
             print("[baldur-assist] Failed to start recording: \(error)")
+            playSound("Basso")
         }
     } else {
         isRecording = false
-        let audioURL = recorder.stopRecording()
-        NSSound.beep()
+
+        let audioURL: URL
+        do {
+            audioURL = try recorder.stopRecording()
+        } catch {
+            print("[baldur-assist] Failed to stop recording: \(error)")
+            playSound("Basso")
+            return
+        }
+
+        playSound("Bottle")
 
         guard let imageData = screenCapture.capture() else {
             print("[baldur-assist] Failed to capture screenshot")
+            playSound("Basso")
             return
         }
 
@@ -40,9 +64,19 @@ func handleHotkey() {
                 try await serverClient.sendRequest(audioURL: audioURL, imageData: imageData)
             } catch {
                 print("[baldur-assist] Request failed: \(error)")
+                playSound("Basso")
             }
             processingRequest = false
         }
+    }
+}
+
+func handleAbort() {
+    if isRecording {
+        isRecording = false
+        _ = try? recorder.stopRecording()
+        print("[baldur-assist] Recording aborted.")
+        playSound("Basso")
     }
 }
 
@@ -63,10 +97,14 @@ func hotkeyCallback(
 
     if type == .keyDown {
         let keyCode = event.getIntegerValueField(.keyboardEventKeycode)
-        let flags = event.flags
-        // Shift+Space: space = keycode 49, check for shift modifier
-        if keyCode == 49 && flags.contains(.maskShift) {
+        // Backtick (`): keycode 50
+        if keyCode == 50 {
             handleHotkey()
+            return nil
+        }
+        // Escape: keycode 53 - abort recording
+        if keyCode == 53 && isRecording {
+            handleAbort()
             return nil
         }
     }
@@ -98,10 +136,10 @@ struct BaldurAssist {
         eventTap = tap
         CGEvent.tapEnable(tap: tap, enable: true)
 
-        print("[baldur-assist] Hotkey listener active. Press Shift+Space to start/stop recording.")
-        print("[baldur-assist] Press Shift+Space once to start recording your question.")
-        print("[baldur-assist] Press Shift+Space again to stop and send to the advisor.")
-        print("[baldur-assist] Press Ctrl+C to quit.")
+        print("[baldur-assist] Hotkey listener active.")
+        print("[baldur-assist] ` (backtick): Start/stop recording and send to advisor")
+        print("[baldur-assist] Escape: Abort recording (while recording)")
+        print("[baldur-assist] Ctrl+C: Quit")
 
         CFRunLoopRun()
     }
