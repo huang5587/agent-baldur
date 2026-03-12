@@ -20,14 +20,17 @@ SYSTEM_PROMPT = (
 )
 
 CHARACTER_EXTRACTION_PROMPT_TEMPLATE = """\
-Extract character information from this Baldur's Gate 3 character sheet screenshot.
-Return ONLY valid JSON matching this exact schema (no markdown, no explanation):
+Extract ALL party members from this Baldur's Gate 3 screenshot.
+Return ONLY a valid JSON array of characters (no markdown, no explanation).
 
+Each character should match this schema:
 {schema}
 
-Extract all visible information. Use null for fields not visible in the screenshot.
+Extract all visible information for each party member. Use null for fields not visible.
 For skills, set true if the character is proficient (look for filled circles or checkmarks).
 For arrays, extract all visible items. For booleans, use true/false.
+
+Return format: [{{character1}}, {{character2}}, ...]
 """
 
 # Path to party.json (relative to server directory)
@@ -36,7 +39,8 @@ PARTY_JSON_PATH = "../baldur-assist/party.json"
 PARTY_UPDATE_KEYWORDS = [
     "add to party", "add to my party", "save to party", "save character",
     "update party", "update my party", "add this character", "save this character",
-    "add them to my party", "add her to my party", "add him to my party"
+    "add them to my party", "add her to my party", "add him to my party",
+    "save my party", "save party", "save all characters", "add my party"
 ]
 
 SERVER_PORT = 8787

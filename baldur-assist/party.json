@@ -1,58 +1,330 @@
 {
-  "partyNotes": {
-    "composition": "",
-    "strategy": "",
-    "weaknesses": "",
-    "synergies": ""
-  },
-  "characters": {
-    "_template": {
-      "race": "",
-      "background": "",
-      "class": "",
-      "subclass": "",
-      "level": 1,
-      "abilityScores": {
-        "strength": 10,
-        "dexterity": 10,
-        "constitution": 10,
-        "intelligence": 10,
-        "wisdom": 10,
-        "charisma": 10
+  "characters" : {
+    "_template" : {
+      "abilityScores" : {
+        "charisma" : 10,
+        "constitution" : 10,
+        "dexterity" : 10,
+        "intelligence" : 10,
+        "strength" : 10,
+        "wisdom" : 10
       },
-      "proficiencies": {
-        "armor": [],
-        "weapons": [],
-        "tools": [],
-        "savingThrows": [],
-        "languages": []
+      "background" : "",
+      "class" : "",
+      "level" : 1,
+      "notes" : "",
+      "proficiencies" : {
+        "armor" : [
+
+        ],
+        "languages" : [
+
+        ],
+        "savingThrows" : [
+
+        ],
+        "tools" : [
+
+        ],
+        "weapons" : [
+
+        ]
       },
-      "skills": {
-        "acrobatics": false,
-        "animalHandling": false,
-        "arcana": false,
-        "athletics": false,
-        "deception": false,
-        "history": false,
-        "insight": false,
-        "intimidation": false,
-        "investigation": false,
-        "medicine": false,
-        "nature": false,
-        "perception": false,
-        "performance": false,
-        "persuasion": false,
-        "religion": false,
-        "sleightOfHand": false,
-        "stealth": false,
-        "survival": false
+      "race" : "",
+      "skills" : {
+        "acrobatics" : false,
+        "animalHandling" : false,
+        "arcana" : false,
+        "athletics" : false,
+        "deception" : false,
+        "history" : false,
+        "insight" : false,
+        "intimidation" : false,
+        "investigation" : false,
+        "medicine" : false,
+        "nature" : false,
+        "perception" : false,
+        "performance" : false,
+        "persuasion" : false,
+        "religion" : false,
+        "sleightOfHand" : false,
+        "stealth" : false,
+        "survival" : false
       },
-      "spells": {
-        "cantrips": [],
-        "known": [],
-        "prepared": []
+      "spells" : {
+        "cantrips" : [
+
+        ],
+        "known" : [
+
+        ],
+        "prepared" : [
+
+        ]
       },
-      "notes": ""
+      "subclass" : ""
+    },
+    "Astarion" : {
+      "abilityScores" : {
+        "charisma" : 10,
+        "constitution" : 14,
+        "dexterity" : 17,
+        "intelligence" : 8,
+        "strength" : 8,
+        "wisdom" : 16
+      },
+      "background" : null,
+      "class" : "Rogue, Ranger, Fighter",
+      "level" : 11,
+      "notes" : "Conditions: Non-Lethal Damage, Longstrider, Aid, Treading Twilight, Covert Critical. Notable Features: Sharpshooter: All In, Alert.",
+      "proficiencies" : {
+        "armor" : [
+
+        ],
+        "languages" : [
+
+        ],
+        "savingThrows" : [
+
+        ],
+        "tools" : [
+
+        ],
+        "weapons" : [
+
+        ]
+      },
+      "race" : "High Elf",
+      "skills" : {
+        "acrobatics" : false,
+        "animalHandling" : false,
+        "arcana" : false,
+        "athletics" : false,
+        "deception" : false,
+        "history" : false,
+        "insight" : false,
+        "intimidation" : false,
+        "investigation" : false,
+        "medicine" : false,
+        "nature" : false,
+        "perception" : false,
+        "performance" : false,
+        "persuasion" : false,
+        "religion" : false,
+        "sleightOfHand" : false,
+        "stealth" : false,
+        "survival" : false
+      },
+      "spells" : {
+        "cantrips" : [
+
+        ],
+        "known" : [
+
+        ],
+        "prepared" : [
+
+        ]
+      },
+      "subclass" : null
+    },
+    "Minsc" : {
+      "abilityScores" : {
+        "charisma" : 10,
+        "constitution" : 13,
+        "dexterity" : 17,
+        "intelligence" : 8,
+        "strength" : 12,
+        "wisdom" : 15
+      },
+      "background" : null,
+      "class" : "Ranger",
+      "level" : 1,
+      "notes" : "Conditions: Non-Lethal Damage. Notable Features: Beast Tamer, Civil Militia, Human Versatility, Mage Breaker, Opportunity Attack, Slayer Knowledge.",
+      "proficiencies" : {
+        "armor" : [
+
+        ],
+        "languages" : [
+
+        ],
+        "savingThrows" : [
+
+        ],
+        "tools" : [
+
+        ],
+        "weapons" : [
+
+        ]
+      },
+      "race" : "Human",
+      "skills" : {
+        "acrobatics" : false,
+        "animalHandling" : false,
+        "arcana" : false,
+        "athletics" : false,
+        "deception" : false,
+        "history" : false,
+        "insight" : false,
+        "intimidation" : false,
+        "investigation" : false,
+        "medicine" : false,
+        "nature" : false,
+        "perception" : false,
+        "performance" : false,
+        "persuasion" : false,
+        "religion" : false,
+        "sleightOfHand" : false,
+        "stealth" : false,
+        "survival" : false
+      },
+      "spells" : {
+        "cantrips" : [
+
+        ],
+        "known" : [
+
+        ],
+        "prepared" : [
+
+        ]
+      },
+      "subclass" : null
+    },
+    "Shadowheart" : {
+      "abilityScores" : {
+        "charisma" : 8,
+        "constitution" : 17,
+        "dexterity" : 14,
+        "intelligence" : 8,
+        "strength" : 10,
+        "wisdom" : 18
+      },
+      "background" : null,
+      "class" : "Cleric",
+      "level" : 11,
+      "notes" : "Conditions: Non-Lethal Damage, Longstrider, Aid. Notable Features: Arcane Vivaciousness, Bolstering Smite, Callous Glow, Civil Militia.",
+      "proficiencies" : {
+        "armor" : [
+
+        ],
+        "languages" : [
+
+        ],
+        "savingThrows" : [
+
+        ],
+        "tools" : [
+
+        ],
+        "weapons" : [
+
+        ]
+      },
+      "race" : "High Half-Elf",
+      "skills" : {
+        "acrobatics" : false,
+        "animalHandling" : false,
+        "arcana" : false,
+        "athletics" : false,
+        "deception" : false,
+        "history" : false,
+        "insight" : false,
+        "intimidation" : false,
+        "investigation" : false,
+        "medicine" : false,
+        "nature" : false,
+        "perception" : false,
+        "performance" : false,
+        "persuasion" : false,
+        "religion" : false,
+        "sleightOfHand" : false,
+        "stealth" : false,
+        "survival" : false
+      },
+      "spells" : {
+        "cantrips" : [
+
+        ],
+        "known" : [
+
+        ],
+        "prepared" : [
+
+        ]
+      },
+      "subclass" : "Light Domain"
+    },
+    "Tav" : {
+      "abilityScores" : {
+        "charisma" : 22,
+        "constitution" : 16,
+        "dexterity" : 18,
+        "intelligence" : 8,
+        "strength" : 8,
+        "wisdom" : 10
+      },
+      "background" : null,
+      "class" : "Bard, Warlock",
+      "level" : 11,
+      "notes" : "Conditions: See Invisibility, Non-Lethal Damage, Speak with Animals, Longstrider, Aid, Temporary Hit Points. Resitances: Fire. Notable Features: Absolute's Tempest, Actor, Agonising Blast, Crackling Resonance.",
+      "proficiencies" : {
+        "armor" : [
+
+        ],
+        "languages" : [
+
+        ],
+        "savingThrows" : [
+
+        ],
+        "tools" : [
+
+        ],
+        "weapons" : [
+
+        ]
+      },
+      "race" : "Asmodeus Tiefling",
+      "skills" : {
+        "acrobatics" : false,
+        "animalHandling" : false,
+        "arcana" : false,
+        "athletics" : false,
+        "deception" : false,
+        "history" : false,
+        "insight" : false,
+        "intimidation" : false,
+        "investigation" : false,
+        "medicine" : false,
+        "nature" : false,
+        "perception" : false,
+        "performance" : false,
+        "persuasion" : false,
+        "religion" : false,
+        "sleightOfHand" : false,
+        "stealth" : false,
+        "survival" : false
+      },
+      "spells" : {
+        "cantrips" : [
+
+        ],
+        "known" : [
+
+        ],
+        "prepared" : [
+
+        ]
+      },
+      "subclass" : null
     }
+  },
+  "partyNotes" : {
+    "composition" : "",
+    "strategy" : "",
+    "synergies" : "",
+    "weaknesses" : ""
   }
 }

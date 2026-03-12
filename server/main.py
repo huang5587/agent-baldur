@@ -16,49 +16,74 @@ async def ask(
     audio: UploadFile | None = File(None),
     text: str | None = Form(None),
 ):
-    image_bytes = await image.read()
+    try:
+        image_bytes = await image.read()
 
-    # Get the question: either from text directly or by transcribing audio
-    if text:
-        question = text
-    elif audio:
-        audio_bytes = await audio.read()
-        question = await transcribe_audio(audio_bytes)
-    else:
-        return {"error": "Must provide either 'text' or 'audio' field"}
+        # Get the question: either from text directly or by transcribing audio
+        if text:
+            question = text
+        elif audio:
+            audio_bytes = await audio.read()
+            try:
+                question = await transcribe_audio(audio_bytes)
+            except Exception as e:
+                print(f"[server] Transcription failed: {e}")
+                question = ""
+        else:
+            return {"error": "Must provide either 'text' or 'audio' field"}
 
-    headers = {}
+        print(f"[server] Transcribed question: {question}")
 
-    # Check if this is a party update request
-    if is_party_update_request(question):
+        headers = {}
+        answer = "Sorry, I couldn't process your request."
+
+        # Check if this is a party update request
+        if is_party_update_request(question):
+            try:
+                characters = await extract_character_data(image_bytes)
+                valid_characters = [c for c in characters if c.get("name")]
+                if valid_characters:
+                    headers["X-Party-Update"] = quote(json.dumps(valid_characters))
+                    names = [c["name"] for c in valid_characters]
+                    if len(names) == 1:
+                        answer = f"Added {names[0]} to your party file."
+                    else:
+                        answer = f"Added {len(names)} characters to your party: {', '.join(names)}."
+                else:
+                    answer = "I couldn't extract character data from this screenshot. Make sure you're showing the character sheet."
+            except Exception as e:
+                print(f"[server] Character extraction failed: {e}")
+                answer = "Failed to extract character data. Please try again with a clearer screenshot of the character sheet."
+        else:
+            # Regular game advice query
+            try:
+                answer = await query_llm(question, image_bytes)
+            except Exception as e:
+                print(f"[server] LLM query failed: {e}")
+                answer = "Sorry, I couldn't get advice right now. Please try again."
+
+        # Convert answer to speech
         try:
-            character_data = await extract_character_data(image_bytes)
-            if character_data and character_data.get("name"):
-                headers["X-Party-Update"] = quote(json.dumps(character_data))
-                answer = f"Added {character_data['name']} to your party file."
-            else:
-                answer = "I couldn't extract character data from this screenshot. Make sure you're showing the character sheet."
+            audio_path = await text_to_speech(answer)
+            headers["X-Text-Response"] = quote(answer)
+
+            return FileResponse(
+                path=str(audio_path),
+                media_type="audio/aiff",
+                filename="response.aiff",
+                headers=headers,
+            )
         except Exception as e:
-            print(f"[server] Character extraction failed: {e}")
-            answer = "Failed to extract character data. Please try again with a clearer screenshot of the character sheet."
-    else:
-        # Regular game advice query
-        answer = await query_llm(question, image_bytes)
+            print(f"[server] TTS failed: {e}")
+            return {"error": "Text-to-speech failed", "text_response": answer}
 
-    # Convert answer to speech
-    audio_path = await text_to_speech(answer)
-    headers["X-Text-Response"] = quote(answer)
-
-    return FileResponse(
-        path=str(audio_path),
-        media_type="audio/aiff",
-        filename="response.aiff",
-        headers=headers,
-    )
+    except Exception as e:
+        print(f"[server] Unexpected error: {e}")
+        return {"error": str(e)}
 
 
 if __name__ == "__main__":
     import uvicorn
     from config import SERVER_PORT
 
-    uvicorn.run(app, host="127.0.0.1", port=SERVER_PORT)
+    uvicorn.run("main:app", host="127.0.0.1", port=SERVER_PORT, reload=True)

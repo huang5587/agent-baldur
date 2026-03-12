@@ -56,21 +56,32 @@ class ServerClient {
                 try partyManager.updateCharacter(jsonData: jsonData)
             } catch {
                 print("[baldur-assist] Failed to update party: \(error)")
+                // Continue anyway - the voice response will still play
             }
         }
 
         // Save and play the response audio
         let tempURL = ProjectPaths.tempDirectory.appendingPathComponent("baldur_response.aiff")
-        try data.write(to: tempURL)
+
+        do {
+            try data.write(to: tempURL)
+        } catch {
+            print("[baldur-assist] Failed to save audio file: \(error)")
+            return
+        }
 
         print("[baldur-assist] Playing response audio...")
-        audioPlayer = try AVAudioPlayer(contentsOf: tempURL)
-        audioPlayer?.play()
+        do {
+            audioPlayer = try AVAudioPlayer(contentsOf: tempURL)
+            audioPlayer?.play()
 
-        // Wait for playback to finish
-        while audioPlayer?.isPlaying == true {
-            try await Task.sleep(nanoseconds: 100_000_000) // 100ms
+            // Wait for playback to finish
+            while audioPlayer?.isPlaying == true {
+                try await Task.sleep(nanoseconds: 100_000_000) // 100ms
+            }
+            print("[baldur-assist] Playback complete.")
+        } catch {
+            print("[baldur-assist] Failed to play audio: \(error)")
         }
-        print("[baldur-assist] Playback complete.")
     }
 }

@@ -10,29 +10,47 @@ class PartyManager {
     }
 
     func updateCharacter(jsonData: Data) throws {
-        guard let newCharacter = try JSONSerialization.jsonObject(with: jsonData) as? [String: Any],
-              let characterName = newCharacter["name"] as? String else {
+        let parsed = try JSONSerialization.jsonObject(with: jsonData)
+
+        // Handle both single character (dict) and multiple characters (array)
+        let characterList: [[String: Any]]
+        if let array = parsed as? [[String: Any]] {
+            characterList = array
+        } else if let single = parsed as? [String: Any] {
+            characterList = [single]
+        } else {
             throw PartyError.invalidCharacterData
         }
 
         var party = try loadParty()
-
-        // Get or create characters dictionary
         var characters = party["characters"] as? [String: Any] ?? [:]
+        var addedNames: [String] = []
 
-        // Remove the "name" field from character data since it's now the key
-        var characterData = newCharacter
-        characterData.removeValue(forKey: "name")
+        for newCharacter in characterList {
+            guard let characterName = newCharacter["name"] as? String else {
+                continue
+            }
 
-        // Add/update the character
-        characters[characterName] = characterData
+            // Remove the "name" field from character data since it's now the key
+            var characterData = newCharacter
+            characterData.removeValue(forKey: "name")
+
+            // Add/update the character
+            characters[characterName] = characterData
+            addedNames.append(characterName)
+        }
+
+        guard !addedNames.isEmpty else {
+            throw PartyError.invalidCharacterData
+        }
+
         party["characters"] = characters
 
         // Save back to file
         let updatedData = try JSONSerialization.data(withJSONObject: party, options: [.prettyPrinted, .sortedKeys])
         try updatedData.write(to: partyFileURL)
 
-        print("[baldur-assist] Updated party.json with character: \(characterName)")
+        print("[baldur-assist] Updated party.json with characters: \(addedNames.joined(separator: ", "))")
     }
 
     private func loadParty() throws -> [String: Any] {

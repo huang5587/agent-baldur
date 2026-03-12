@@ -62,13 +62,26 @@ class AudioRecorder {
         print("[baldur-assist] Recording started...")
     }
 
-    func stopRecording() -> URL {
+    func stopRecording() throws -> URL {
+        guard audioEngine != nil else {
+            throw RecorderError.notRecording
+        }
+
         audioEngine?.inputNode.removeTap(onBus: 0)
         audioEngine?.stop()
         audioEngine = nil
         audioFile = nil
 
+        guard FileManager.default.fileExists(atPath: outputURL.path) else {
+            throw RecorderError.noAudioFile
+        }
+
         print("[baldur-assist] Recording stopped. Saved to \(outputURL.path)")
         return outputURL
+    }
+
+    enum RecorderError: Error {
+        case notRecording
+        case noAudioFile
     }
 }

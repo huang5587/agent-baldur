@@ -77,8 +77,8 @@ def _build_extraction_prompt() -> str:
     return CHARACTER_EXTRACTION_PROMPT_TEMPLATE.format(schema=schema)
 
 
-async def extract_character_data(image_bytes: bytes) -> dict | None:
-    """Extract character data from a character sheet screenshot."""
+async def extract_character_data(image_bytes: bytes) -> list[dict]:
+    """Extract all party members from a screenshot. Returns a list of character dicts."""
     image_b64 = base64.b64encode(image_bytes).decode("utf-8")
     prompt = _build_extraction_prompt()
 
@@ -125,4 +125,8 @@ async def extract_character_data(image_bytes: bytes) -> dict | None:
             content = content[:-3]
         content = content.strip()
 
-        return json.loads(content)
+        result = json.loads(content)
+        # Ensure we always return a list
+        if isinstance(result, dict):
+            return [result]
+        return result
