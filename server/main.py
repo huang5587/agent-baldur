@@ -64,13 +64,14 @@ async def ask(
 
         # Convert answer to speech
         try:
-            audio_path = await text_to_speech(answer)
+            audio_path, media_type = await text_to_speech(answer)
             headers["X-Text-Response"] = quote(answer)
 
+            ext = "wav" if "wav" in media_type else "aiff"
             return FileResponse(
                 path=str(audio_path),
-                media_type="audio/aiff",
-                filename="response.aiff",
+                media_type=media_type,
+                filename=f"response.{ext}",
                 headers=headers,
             )
         except Exception as e:

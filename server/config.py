@@ -1,9 +1,16 @@
 import os
+from pathlib import Path
 from dotenv import load_dotenv
 
 load_dotenv()
 
 OPENROUTER_API_KEY = os.environ.get("OPENROUTER_API_KEY", "")
+
+# Voice cloning configuration
+VOICE_CLONE_ENABLED = os.environ.get("VOICE_CLONE_ENABLED", "").lower() in ("1", "true", "yes")
+VOICE_CLONE_CHECKPOINT_DIR = Path(__file__).parent.parent / "audio" / "checkpoints" / "s1-mini"
+VOICE_CLONE_REFERENCE_AUDIO = Path(__file__).parent.parent / "audio" / "examples" / "ian_speech_clip.mp3"
+VOICE_CLONE_REFERENCE_TEXT = Path(__file__).parent.parent / "audio" / "examples" / "ian_transcript.txt"
 OPENROUTER_BASE_URL = "https://openrouter.ai/api/v1"
 
 # Multimodal model for game advice
