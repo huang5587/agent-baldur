@@ -213,3 +213,4 @@ baldur-assist/baldur-assist
 baldur-assist/temp/*.wav
 baldur-assist/temp/*.aiff
 .claude
+.project-root
