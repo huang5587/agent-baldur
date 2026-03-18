@@ -12,6 +12,23 @@ VOICE_CLONE_REFERENCE_AUDIO = Path(__file__).parent.parent / "tts" / "examples" 
 VOICE_CLONE_REFERENCE_TEXT = Path(__file__).parent.parent / "tts" / "examples" / "ian_transcript.txt"
 OPENROUTER_BASE_URL = "https://openrouter.ai/api/v1"
 
+# HTTP Timeouts
+LLM_TIMEOUT_SECONDS = 60.0
+TRANSCRIPTION_TIMEOUT_SECONDS = 30.0
+
+# API Endpoints
+OPENROUTER_CHAT_ENDPOINT = "/chat/completions"
+
+# Media Types
+MEDIA_TYPE_WAV = "audio/wav"
+MEDIA_TYPE_AIFF = "audio/aiff"
+
+# TTS
+MACOS_VOICE = "Moira"
+
+# Prompts
+TRANSCRIPTION_PROMPT = "Transcribe this audio exactly. Return only the transcription, nothing else."
+
 # Multimodal model for game advice
 VISION_MODEL = "qwen/qwen3.5-122b-a10b"
 

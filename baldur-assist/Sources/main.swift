@@ -33,10 +33,10 @@ func handleHotkey() {
         do {
             try recorder.startRecording()
             isRecording = true
-            playSound("Bottle")
+            playSound(Constants.soundStart)
         } catch {
             print("[baldur-assist] Failed to start recording: \(error)")
-            playSound("Basso")
+            playSound(Constants.soundError)
         }
     } else {
         isRecording = false
@@ -46,15 +46,15 @@ func handleHotkey() {
             audioURL = try recorder.stopRecording()
         } catch {
             print("[baldur-assist] Failed to stop recording: \(error)")
-            playSound("Basso")
+            playSound(Constants.soundError)
             return
         }
 
-        playSound("Bottle")
+        playSound(Constants.soundStart)
 
         guard let imageData = screenCapture.capture() else {
             print("[baldur-assist] Failed to capture screenshot")
-            playSound("Basso")
+            playSound(Constants.soundError)
             return
         }
 
@@ -64,7 +64,7 @@ func handleHotkey() {
                 try await serverClient.sendRequest(audioURL: audioURL, imageData: imageData)
             } catch {
                 print("[baldur-assist] Request failed: \(error)")
-                playSound("Basso")
+                playSound(Constants.soundError)
             }
             processingRequest = false
         }
@@ -76,7 +76,7 @@ func handleAbort() {
         isRecording = false
         _ = try? recorder.stopRecording()
         print("[baldur-assist] Recording aborted.")
-        playSound("Basso")
+        playSound(Constants.soundError)
     }
 }
 
@@ -96,14 +96,12 @@ func hotkeyCallback(
     }
 
     if type == .keyDown {
-        let keyCode = event.getIntegerValueField(.keyboardEventKeycode)
-        // Backtick (`): keycode 50
-        if keyCode == 50 {
+        let keyCode = UInt16(event.getIntegerValueField(.keyboardEventKeycode))
+        if keyCode == Constants.hotkeyBacktick {
             handleHotkey()
             return nil
         }
-        // Escape: keycode 53 - abort recording
-        if keyCode == 53 && isRecording {
+        if keyCode == Constants.hotkeyEscape && isRecording {
             handleAbort()
             return nil
         }

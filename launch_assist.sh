@@ -3,6 +3,9 @@ set -e
 
 DIR="$(cd "$(dirname "$0")" && pwd)"
 
+# Load shared configuration
+source "$DIR/config.sh"
+
 # Parse CLI arguments
 VOICE_CLONE_FLAG=""
 while [[ "$#" -gt 0 ]]; do
@@ -33,18 +36,18 @@ if [ -z "$OPENROUTER_API_KEY" ]; then
 fi
 
 # Start the Python server in the background
-echo "Starting server on port 8787..."
+echo "Starting server on port $SERVER_PORT..."
 source "$DIR/.venv/bin/activate"
 cd "$DIR/server"
 python main.py $VOICE_CLONE_FLAG &
 SERVER_PID=$!
 
 # Wait for server to be ready
-for i in $(seq 1 10); do
-    if curl -s http://localhost:8787/docs > /dev/null 2>&1; then
+for i in $(seq 1 $STARTUP_RETRY_COUNT); do
+    if curl -s "$SERVER_HEALTH_URL" > /dev/null 2>&1; then
         break
     fi
-    sleep 0.5
+    sleep $STARTUP_RETRY_DELAY
 done
 
 echo "Server running (PID $SERVER_PID)"

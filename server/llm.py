@@ -1,7 +1,17 @@
 import base64
 import logging
 import httpx
-from config import OPENROUTER_API_KEY, OPENROUTER_BASE_URL, VISION_MODEL, TRANSCRIPTION_MODEL, SYSTEM_PROMPT
+from config import (
+    OPENROUTER_API_KEY,
+    OPENROUTER_BASE_URL,
+    OPENROUTER_CHAT_ENDPOINT,
+    VISION_MODEL,
+    TRANSCRIPTION_MODEL,
+    SYSTEM_PROMPT,
+    LLM_TIMEOUT_SECONDS,
+    TRANSCRIPTION_TIMEOUT_SECONDS,
+    TRANSCRIPTION_PROMPT,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -29,9 +39,9 @@ async def query_llm(question: str, image_bytes: bytes) -> str:
         },
     ]
 
-    async with httpx.AsyncClient(timeout=60.0) as client:
+    async with httpx.AsyncClient(timeout=LLM_TIMEOUT_SECONDS) as client:
         resp = await client.post(
-            f"{OPENROUTER_BASE_URL}/chat/completions",
+            f"{OPENROUTER_BASE_URL}{OPENROUTER_CHAT_ENDPOINT}",
             headers={
                 "Authorization": f"Bearer {OPENROUTER_API_KEY}",
                 "Content-Type": "application/json",
@@ -58,7 +68,7 @@ async def transcribe_audio(audio_bytes: bytes) -> str:
             "content": [
                 {
                     "type": "text",
-                    "text": "Transcribe this audio exactly. Return only the transcription, nothing else.",
+                    "text": TRANSCRIPTION_PROMPT,
                 },
                 {
                     "type": "input_audio",
@@ -71,9 +81,9 @@ async def transcribe_audio(audio_bytes: bytes) -> str:
         },
     ]
 
-    async with httpx.AsyncClient(timeout=30.0) as client:
+    async with httpx.AsyncClient(timeout=TRANSCRIPTION_TIMEOUT_SECONDS) as client:
         resp = await client.post(
-            f"{OPENROUTER_BASE_URL}/chat/completions",
+            f"{OPENROUTER_BASE_URL}{OPENROUTER_CHAT_ENDPOINT}",
             headers={
                 "Authorization": f"Bearer {OPENROUTER_API_KEY}",
                 "Content-Type": "application/json",

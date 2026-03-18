@@ -2,7 +2,7 @@ import AVFoundation
 import Foundation
 
 class ServerClient {
-    private let serverURL = URL(string: "http://localhost:8787/ask")!
+    private let serverURL = URL(string: Constants.serverURL)!
     private var audioPlayer: AVAudioPlayer?
     private let partyManager = PartyManager()
 
@@ -11,7 +11,7 @@ class ServerClient {
         var request = URLRequest(url: serverURL)
         request.httpMethod = "POST"
         request.setValue("multipart/form-data; boundary=\(boundary)", forHTTPHeaderField: "Content-Type")
-        request.timeoutInterval = 120
+        request.timeoutInterval = Constants.requestTimeoutSeconds
 
         var body = Data()
 
@@ -43,13 +43,13 @@ class ServerClient {
             return
         }
 
-        if let textResponse = httpResponse.value(forHTTPHeaderField: "X-Text-Response"),
+        if let textResponse = httpResponse.value(forHTTPHeaderField: Constants.headerTextResponse),
            let decoded = textResponse.removingPercentEncoding {
             print("[baldur-assist] LLM response: \(decoded)")
         }
 
         // Check for party update data
-        if let partyUpdate = httpResponse.value(forHTTPHeaderField: "X-Party-Update"),
+        if let partyUpdate = httpResponse.value(forHTTPHeaderField: Constants.headerPartyUpdate),
            let decoded = partyUpdate.removingPercentEncoding,
            let jsonData = decoded.data(using: .utf8) {
             do {
@@ -61,7 +61,7 @@ class ServerClient {
         }
 
         // Save and play the response audio
-        let tempURL = ProjectPaths.tempDirectory.appendingPathComponent("baldur_response.aiff")
+        let tempURL = ProjectPaths.tempDirectory.appendingPathComponent(Constants.responseFilename)
 
         do {
             try data.write(to: tempURL)
@@ -77,7 +77,7 @@ class ServerClient {
 
             // Wait for playback to finish
             while audioPlayer?.isPlaying == true {
-                try await Task.sleep(nanoseconds: 100_000_000) // 100ms
+                try await Task.sleep(nanoseconds: Constants.playbackCheckIntervalNs)
             }
             print("[baldur-assist] Playback complete.")
         } catch {

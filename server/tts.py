@@ -17,11 +17,12 @@ from config import (
     VOICE_CLONE_CHECKPOINT_DIR,
     VOICE_CLONE_REFERENCE_AUDIO,
     VOICE_CLONE_REFERENCE_TEXT,
+    MACOS_VOICE,
+    MEDIA_TYPE_WAV,
+    MEDIA_TYPE_AIFF,
 )
 
 logger = logging.getLogger(__name__)
-
-MACOS_VOICE = "Moira"
 
 # Voice cloning state
 _voice_clone_enabled = False
@@ -119,7 +120,7 @@ async def text_to_speech(text: str) -> tuple[Path, str]:
     if cloner:
         try:
             path = await asyncio.to_thread(cloner.synthesize_sync, text)
-            return path, "audio/wav"
+            return path, MEDIA_TYPE_WAV
         except Exception as e:
             logger.error("Voice cloning synthesis failed: %s", e)
             logger.warning("Falling back to macOS TTS")
@@ -131,4 +132,4 @@ async def text_to_speech(text: str) -> tuple[Path, str]:
         ["say", "-v", MACOS_VOICE, "-o", str(output_path), text],
         check=True
     )
-    return output_path, "audio/aiff"
+    return output_path, MEDIA_TYPE_AIFF

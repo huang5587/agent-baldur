@@ -1,0 +1,6 @@
+# config.sh - Shared configuration for shell scripts
+SERVER_PORT=8787
+SERVER_HOST="127.0.0.1"
+SERVER_HEALTH_URL="http://${SERVER_HOST}:${SERVER_PORT}/docs"
+STARTUP_RETRY_COUNT=10
+STARTUP_RETRY_DELAY=0.5

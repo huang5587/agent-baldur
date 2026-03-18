@@ -9,7 +9,7 @@ class AudioRecorder {
     init() {
         let tempDir = ProjectPaths.tempDirectory
         try? FileManager.default.createDirectory(at: tempDir, withIntermediateDirectories: true)
-        outputURL = tempDir.appendingPathComponent("baldur_question.wav")
+        outputURL = tempDir.appendingPathComponent(Constants.recordingFilename)
     }
 
     func startRecording() throws {
@@ -23,7 +23,7 @@ class AudioRecorder {
         // Target format: 16kHz mono, 16-bit PCM (optimal for speech recognition)
         let outputSettings: [String: Any] = [
             AVFormatIDKey: kAudioFormatLinearPCM,
-            AVSampleRateKey: 16000.0,
+            AVSampleRateKey: Constants.sampleRate,
             AVNumberOfChannelsKey: 1,
             AVLinearPCMBitDepthKey: 16,
             AVLinearPCMIsFloatKey: false,
@@ -33,17 +33,17 @@ class AudioRecorder {
         audioFile = try AVAudioFile(forWriting: outputURL, settings: outputSettings, commonFormat: .pcmFormatInt16, interleaved: true)
 
         // Create converter to resample/downmix to target format
-        guard let outputFormat = AVAudioFormat(commonFormat: .pcmFormatInt16, sampleRate: 16000, channels: 1, interleaved: true) else {
+        guard let outputFormat = AVAudioFormat(commonFormat: .pcmFormatInt16, sampleRate: Constants.sampleRate, channels: 1, interleaved: true) else {
             throw NSError(domain: "AudioRecorder", code: 1, userInfo: [NSLocalizedDescriptionKey: "Failed to create output format"])
         }
         guard let converter = AVAudioConverter(from: inputFormat, to: outputFormat) else {
             throw NSError(domain: "AudioRecorder", code: 2, userInfo: [NSLocalizedDescriptionKey: "Failed to create audio converter"])
         }
 
-        inputNode.installTap(onBus: 0, bufferSize: 4096, format: inputFormat) { [weak self] buffer, _ in
+        inputNode.installTap(onBus: 0, bufferSize: Constants.audioBufferSize, format: inputFormat) { [weak self] buffer, _ in
             guard let self = self, let file = self.audioFile else { return }
 
-            let frameCount = AVAudioFrameCount(Double(buffer.frameLength) * 16000.0 / inputFormat.sampleRate)
+            let frameCount = AVAudioFrameCount(Double(buffer.frameLength) * Constants.sampleRate / inputFormat.sampleRate)
             guard let convertedBuffer = AVAudioPCMBuffer(pcmFormat: outputFormat, frameCapacity: frameCount) else { return }
 
             var error: NSError?

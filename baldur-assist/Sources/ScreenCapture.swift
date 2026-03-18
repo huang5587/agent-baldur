@@ -38,7 +38,7 @@ class ScreenCapture {
 
             // Match on owner "bg3" or window name containing "baldur"
             // Skip windows with empty names (helper windows)
-            let isMatch = ownerName == "bg3" || ownerName.contains("baldur") || windowName.contains("baldur")
+            let isMatch = ownerName == Constants.bg3OwnerName || ownerName.contains(Constants.baldurWindowSubstring) || windowName.contains(Constants.baldurWindowSubstring)
             let hasContent = !windowName.isEmpty
 
             if isMatch && hasContent {

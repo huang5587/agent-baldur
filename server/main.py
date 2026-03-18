@@ -9,6 +9,7 @@ from logging_config import setup_logging
 from llm import query_llm, transcribe_audio
 from party import is_party_update_request, extract_character_data
 from tts import text_to_speech, enable_voice_clone
+from config import MEDIA_TYPE_WAV
 
 setup_logging()
 logger = logging.getLogger(__name__)
@@ -78,7 +79,7 @@ async def ask(
             audio_path, media_type = await text_to_speech(answer)
             headers["X-Text-Response"] = quote(answer)
 
-            ext = "wav" if "wav" in media_type else "aiff"
+            ext = "wav" if media_type == MEDIA_TYPE_WAV else "aiff"
             return FileResponse(
                 path=str(audio_path),
                 media_type=media_type,
