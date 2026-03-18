@@ -36,10 +36,10 @@ class VoiceCloner:
         logger.info(f"Python executable: {sys.executable}")
         logger.info(f"sys.path: {sys.path[:3]}")
 
-        # Add audio directory to path for fish_tts_core import
-        audio_dir = str(checkpoint_dir.parent.parent)
-        if audio_dir not in sys.path:
-            sys.path.insert(0, audio_dir)
+        # Add tts directory to path for fish_tts_core import
+        tts_dir = str(checkpoint_dir.parent.parent)
+        if tts_dir not in sys.path:
+            sys.path.insert(0, tts_dir)
 
         from fish_tts_core import (
             get_device,
