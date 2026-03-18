@@ -1,5 +1,6 @@
 import logging
 import json
+import sys
 from urllib.parse import quote
 from fastapi import FastAPI, File, Form, UploadFile
 from fastapi.responses import FileResponse
@@ -7,10 +8,15 @@ from fastapi.responses import FileResponse
 from logging_config import setup_logging
 from llm import query_llm, transcribe_audio
 from party import is_party_update_request, extract_character_data
-from tts import text_to_speech
+from tts import text_to_speech, enable_voice_clone
 
 setup_logging()
 logger = logging.getLogger(__name__)
+
+# Enable voice clone if flag present (works with uvicorn reload)
+if "--voice-clone" in sys.argv:
+    enable_voice_clone()
+    logger.info("Voice cloning enabled")
 
 app = FastAPI()
 
@@ -92,4 +98,4 @@ if __name__ == "__main__":
     import uvicorn
     from config import SERVER_PORT
 
-    uvicorn.run("main:app", host="127.0.0.1", port=SERVER_PORT, reload=True)
+    uvicorn.run(app, host="127.0.0.1", port=SERVER_PORT)

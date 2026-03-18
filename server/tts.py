@@ -14,7 +14,6 @@ import tempfile
 from pathlib import Path
 
 from config import (
-    VOICE_CLONE_ENABLED,
     VOICE_CLONE_CHECKPOINT_DIR,
     VOICE_CLONE_REFERENCE_AUDIO,
     VOICE_CLONE_REFERENCE_TEXT,
@@ -24,8 +23,15 @@ logger = logging.getLogger(__name__)
 
 MACOS_VOICE = "Moira"
 
-# Lazy-loaded voice cloning state
+# Voice cloning state
+_voice_clone_enabled = False
 _voice_cloner: "VoiceCloner | None" = None
+
+
+def enable_voice_clone():
+    """Enable voice cloning mode. Call before first text_to_speech() call."""
+    global _voice_clone_enabled
+    _voice_clone_enabled = True
 
 
 class VoiceCloner:
@@ -84,7 +90,7 @@ def _get_voice_cloner() -> VoiceCloner | None:
     """Get or initialize voice cloner (lazy loading)."""
     global _voice_cloner
 
-    if not VOICE_CLONE_ENABLED:
+    if not _voice_clone_enabled:
         return None
 
     if _voice_cloner is None:

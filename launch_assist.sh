@@ -4,10 +4,11 @@ set -e
 DIR="$(cd "$(dirname "$0")" && pwd)"
 
 # Parse CLI arguments
+VOICE_CLONE_FLAG=""
 while [[ "$#" -gt 0 ]]; do
     case $1 in
         --voice-clone)
-            export VOICE_CLONE_ENABLED=1
+            VOICE_CLONE_FLAG="--voice-clone"
             echo "Voice cloning enabled"
             ;;
         *)
@@ -35,7 +36,7 @@ fi
 echo "Starting server on port 8787..."
 source "$DIR/.venv/bin/activate"
 cd "$DIR/server"
-uvicorn main:app --host 127.0.0.1 --port 8787 &
+python main.py $VOICE_CLONE_FLAG &
 SERVER_PID=$!
 
 # Wait for server to be ready
