@@ -212,5 +212,12 @@ __marimo__/
 baldur-assist/baldur-assist
 baldur-assist/temp/*.wav
 baldur-assist/temp/*.aiff
+baldur-assist/party.json
+
+# TTS voice cloning (user-provided)
+tts/checkpoints/
+tts/examples/
+tts/output/
+tts/temp/
 .claude
 .project-root
