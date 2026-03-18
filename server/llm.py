@@ -1,9 +1,13 @@
 import base64
+import logging
 import httpx
 from config import OPENROUTER_API_KEY, OPENROUTER_BASE_URL, VISION_MODEL, TRANSCRIPTION_MODEL, SYSTEM_PROMPT
 
+logger = logging.getLogger(__name__)
+
 
 async def query_llm(question: str, image_bytes: bytes) -> str:
+    logger.debug("Querying LLM with model=%s, image_size=%d bytes", VISION_MODEL, len(image_bytes))
     image_b64 = base64.b64encode(image_bytes).decode("utf-8")
 
     messages = [
@@ -39,10 +43,13 @@ async def query_llm(question: str, image_bytes: bytes) -> str:
         )
         resp.raise_for_status()
         data = resp.json()
-        return data["choices"][0]["message"]["content"]
+        content = data["choices"][0]["message"]["content"]
+        logger.debug("LLM response received: %d chars", len(content))
+        return content
 
 
 async def transcribe_audio(audio_bytes: bytes) -> str:
+    logger.debug("Transcribing audio: %d bytes", len(audio_bytes))
     audio_b64 = base64.b64encode(audio_bytes).decode("utf-8")
 
     messages = [
@@ -78,4 +85,6 @@ async def transcribe_audio(audio_bytes: bytes) -> str:
         )
         resp.raise_for_status()
         data = resp.json()
-        return data["choices"][0]["message"]["content"]
+        transcript = data["choices"][0]["message"]["content"]
+        logger.debug("Transcription complete: %d chars", len(transcript))
+        return transcript

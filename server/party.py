@@ -1,5 +1,6 @@
 import json
 import base64
+import logging
 from pathlib import Path
 import httpx
 from config import (
@@ -10,6 +11,8 @@ from config import (
     PARTY_JSON_PATH,
     PARTY_UPDATE_KEYWORDS,
 )
+
+logger = logging.getLogger(__name__)
 
 
 def is_party_update_request(question: str) -> bool:
@@ -79,6 +82,7 @@ def _build_extraction_prompt() -> str:
 
 async def extract_character_data(image_bytes: bytes) -> list[dict]:
     """Extract all party members from a screenshot. Returns a list of character dicts."""
+    logger.info("Extracting character data from screenshot")
     image_b64 = base64.b64encode(image_bytes).decode("utf-8")
     prompt = _build_extraction_prompt()
 
@@ -128,5 +132,6 @@ async def extract_character_data(image_bytes: bytes) -> list[dict]:
         result = json.loads(content)
         # Ensure we always return a list
         if isinstance(result, dict):
-            return [result]
+            result = [result]
+        logger.info("Extracted %d character(s) from screenshot", len(result))
         return result

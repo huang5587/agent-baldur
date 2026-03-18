@@ -32,9 +32,7 @@ class VoiceCloner:
     """Fish Audio voice cloning with pre-loaded models."""
 
     def __init__(self, checkpoint_dir: Path, reference_audio: Path, reference_text_path: Path):
-        # Debug: check Python environment
-        logger.info(f"Python executable: {sys.executable}")
-        logger.info(f"sys.path: {sys.path[:3]}")
+        logger.debug("Python executable: %s", sys.executable)
 
         # Add tts directory to path for fish_tts_core import
         tts_dir = str(checkpoint_dir.parent.parent)
@@ -53,21 +51,21 @@ class VoiceCloner:
 
         # Load reference transcript
         self.reference_text = reference_text_path.read_text().strip()
-        logger.info(f"Loaded reference transcript: {self.reference_text[:50]}...")
+        logger.debug("Reference transcript loaded: %d chars", len(self.reference_text))
 
-        logger.info(f"Loading Fish Audio models on {self.device}...")
+        logger.info("Loading TTS models on device=%s", self.device)
 
         # Pre-load models (cached in fish_tts_core)
         load_codec_model(checkpoint_dir, self.device)
         load_semantic_model(checkpoint_dir, self.device)
 
         # Pre-extract reference voice
-        logger.info(f"Extracting voice from {reference_audio.name}...")
+        logger.debug("Extracting voice features from %s", reference_audio.name)
         self.reference_tokens = extract_reference_tokens(
             reference_audio, checkpoint_dir, self.device
         )
 
-        logger.info("Voice cloning ready")
+        logger.info("Voice cloning initialized")
 
     def synthesize_sync(self, text: str) -> Path:
         """Blocking synthesis. Call via asyncio.to_thread()."""
@@ -97,10 +95,8 @@ def _get_voice_cloner() -> VoiceCloner | None:
                 VOICE_CLONE_REFERENCE_TEXT
             )
         except Exception as e:
-            import traceback
-            logger.error(f"Voice cloning init failed: {e}")
-            logger.error(traceback.format_exc())
-            logger.warning("Falling back to macOS say")
+            logger.error("Voice cloning initialization failed: %s", e, exc_info=True)
+            logger.warning("Falling back to macOS TTS")
 
     return _voice_cloner
 
@@ -119,7 +115,8 @@ async def text_to_speech(text: str) -> tuple[Path, str]:
             path = await asyncio.to_thread(cloner.synthesize_sync, text)
             return path, "audio/wav"
         except Exception as e:
-            logger.error(f"Voice cloning failed: {e}, falling back to macOS say")
+            logger.error("Voice cloning synthesis failed: %s", e)
+            logger.warning("Falling back to macOS TTS")
 
     # Fallback: macOS say
     output_path = Path(tempfile.mktemp(suffix=".aiff"))

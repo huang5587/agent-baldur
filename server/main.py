@@ -1,11 +1,16 @@
+import logging
 import json
 from urllib.parse import quote
 from fastapi import FastAPI, File, Form, UploadFile
 from fastapi.responses import FileResponse
 
+from logging_config import setup_logging
 from llm import query_llm, transcribe_audio
 from party import is_party_update_request, extract_character_data
 from tts import text_to_speech
+
+setup_logging()
+logger = logging.getLogger(__name__)
 
 app = FastAPI()
 
@@ -27,12 +32,12 @@ async def ask(
             try:
                 question = await transcribe_audio(audio_bytes)
             except Exception as e:
-                print(f"[server] Transcription failed: {e}")
+                logger.error("Transcription failed: %s", e)
                 question = ""
         else:
             return {"error": "Must provide either 'text' or 'audio' field"}
 
-        print(f"[server] Transcribed question: {question}")
+        logger.info("Received question: %s", question[:100] if question else "(empty)")
 
         headers = {}
         answer = "Sorry, I couldn't process your request."
@@ -52,14 +57,14 @@ async def ask(
                 else:
                     answer = "I couldn't extract character data from this screenshot. Make sure you're showing the character sheet."
             except Exception as e:
-                print(f"[server] Character extraction failed: {e}")
+                logger.error("Character extraction failed: %s", e)
                 answer = "Failed to extract character data. Please try again with a clearer screenshot of the character sheet."
         else:
             # Regular game advice query
             try:
                 answer = await query_llm(question, image_bytes)
             except Exception as e:
-                print(f"[server] LLM query failed: {e}")
+                logger.error("LLM query failed: %s", e)
                 answer = "Sorry, I couldn't get advice right now. Please try again."
 
         # Convert answer to speech
@@ -75,11 +80,11 @@ async def ask(
                 headers=headers,
             )
         except Exception as e:
-            print(f"[server] TTS failed: {e}")
+            logger.error("TTS synthesis failed: %s", e)
             return {"error": "Text-to-speech failed", "text_response": answer}
 
     except Exception as e:
-        print(f"[server] Unexpected error: {e}")
+        logger.exception("Unexpected error processing request")
         return {"error": str(e)}
 
 
