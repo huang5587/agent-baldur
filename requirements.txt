@@ -1,13 +1,13 @@
 # Server dependencies
-fastapi
-uvicorn[standard]
-httpx
-python-multipart
-python-dotenv
+fastapi==0.135.1
+uvicorn[standard]==0.41.0
+httpx==0.28.1
+python-multipart==0.0.22
+python-dotenv==1.2.2
 
 # Voice cloning dependencies (Fish Audio S1-Mini)
-numpy
-torch
-torchaudio
-soundfile
-fish-speech
+numpy==1.26.4
+torch==2.10.0
+torchaudio==2.10.0
+soundfile==0.13.1
+fish-speech==0.1.0
