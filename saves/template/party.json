@@ -1,0 +1,52 @@
+{
+  "characters" : {
+    "_template" : {
+      "abilityScores" : {
+        "charisma" : 10,
+        "constitution" : 10,
+        "dexterity" : 10,
+        "intelligence" : 10,
+        "strength" : 10,
+        "wisdom" : 10
+      },
+      "background" : "",
+      "class" : "",
+      "level" : 1,
+      "notes" : "",
+      "proficiencies" : {
+        "armor" : [],
+        "languages" : [],
+        "savingThrows" : [],
+        "tools" : [],
+        "weapons" : []
+      },
+      "race" : "",
+      "skills" : {
+        "acrobatics" : false,
+        "animalHandling" : false,
+        "arcana" : false,
+        "athletics" : false,
+        "deception" : false,
+        "history" : false,
+        "insight" : false,
+        "intimidation" : false,
+        "investigation" : false,
+        "medicine" : false,
+        "nature" : false,
+        "perception" : false,
+        "performance" : false,
+        "persuasion" : false,
+        "religion" : false,
+        "sleightOfHand" : false,
+        "stealth" : false,
+        "survival" : false
+      },
+      "spells" : {
+        "cantrips" : [],
+        "known" : [],
+        "prepared" : []
+      },
+      "subclass" : ""
+    }
+  }
+}

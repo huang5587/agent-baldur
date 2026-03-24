@@ -6,13 +6,27 @@ import httpx
 from config import (
     OPENROUTER_API_KEY,
     OPENROUTER_BASE_URL,
+    OPENROUTER_CHAT_ENDPOINT,
     VISION_MODEL,
+    LLM_TIMEOUT_SECONDS,
     CHARACTER_EXTRACTION_PROMPT_TEMPLATE,
-    PARTY_JSON_PATH,
     PARTY_UPDATE_KEYWORDS,
+    SAVE_SWITCH_KEYWORDS,
+    SAVE_LIST_KEYWORDS,
+    SAVE_CREATE_KEYWORDS,
+    DECISION_RECORD_KEYWORDS,
+    DECISION_EXTRACTION_PROMPT,
+    DECISION_DETECT_PROMPT,
 )
+from save_manager import get_template_path
 
 logger = logging.getLogger(__name__)
+
+
+def is_decision_record_request(question: str) -> bool:
+    """Check if the user's question is an explicit decision recording request."""
+    question_lower = question.lower()
+    return any(keyword in question_lower for keyword in DECISION_RECORD_KEYWORDS)
 
 
 def is_party_update_request(question: str) -> bool:
@@ -21,9 +35,35 @@ def is_party_update_request(question: str) -> bool:
     return any(keyword in question_lower for keyword in PARTY_UPDATE_KEYWORDS)
 
 
+def parse_save_command(question: str) -> tuple[str, str] | None:
+    """Parse a save-related voice command. Returns (action, save_name) or None."""
+    question_lower = question.lower()
+
+    for keyword in SAVE_LIST_KEYWORDS:
+        if keyword in question_lower:
+            return ("list", "")
+
+    for keyword in SAVE_SWITCH_KEYWORDS:
+        if keyword in question_lower:
+            # Extract the save name after the keyword
+            idx = question_lower.index(keyword) + len(keyword)
+            name = question_lower[idx:].strip().strip(".")
+            if name:
+                return ("switch", name)
+
+    for keyword in SAVE_CREATE_KEYWORDS:
+        if keyword in question_lower:
+            idx = question_lower.index(keyword) + len(keyword)
+            name = question_lower[idx:].strip().strip(".")
+            if name:
+                return ("create", name)
+
+    return None
+
+
 def _get_character_schema() -> str:
-    """Read party.json and extract the character template as a schema."""
-    party_path = Path(__file__).parent / PARTY_JSON_PATH
+    """Read the template party.json and extract the character schema."""
+    party_path = get_template_path()
 
     with open(party_path) as f:
         party = json.load(f)
@@ -135,3 +175,60 @@ async def extract_character_data(image_bytes: bytes) -> list[dict]:
             result = [result]
         logger.info("Extracted %d character(s) from screenshot", len(result))
         return result
+
+
+def _strip_markdown(content: str) -> str:
+    """Strip markdown code blocks from LLM response."""
+    content = content.strip()
+    if content.startswith("```json"):
+        content = content[7:]
+    if content.startswith("```"):
+        content = content[3:]
+    if content.endswith("```"):
+        content = content[:-3]
+    return content.strip()
+
+
+async def _query_text(prompt: str) -> str:
+    """Send a text-only prompt to the LLM and return the response."""
+    async with httpx.AsyncClient(timeout=LLM_TIMEOUT_SECONDS) as client:
+        resp = await client.post(
+            f"{OPENROUTER_BASE_URL}{OPENROUTER_CHAT_ENDPOINT}",
+            headers={
+                "Authorization": f"Bearer {OPENROUTER_API_KEY}",
+                "Content-Type": "application/json",
+            },
+            json={
+                "model": VISION_MODEL,
+                "messages": [{"role": "user", "content": prompt}],
+            },
+        )
+        resp.raise_for_status()
+        data = resp.json()
+        return data["choices"][0]["message"]["content"]
+
+
+async def extract_decision(statement: str) -> dict | None:
+    """Extract a structured decision from an explicit user statement."""
+    prompt = DECISION_EXTRACTION_PROMPT.format(statement=statement)
+    content = _strip_markdown(await _query_text(prompt))
+    try:
+        result = json.loads(content)
+        if isinstance(result, dict) and result.get("decision"):
+            return result
+    except json.JSONDecodeError:
+        logger.warning("Failed to parse decision extraction response: %s", content)
+    return None
+
+
+async def detect_implicit_decision(question: str) -> dict | None:
+    """Check if a regular query implies a narrative decision was made."""
+    prompt = DECISION_DETECT_PROMPT.format(question=question)
+    content = _strip_markdown(await _query_text(prompt))
+    try:
+        result = json.loads(content)
+        if isinstance(result, dict) and result.get("decision"):
+            return result
+    except (json.JSONDecodeError, ValueError):
+        pass
+    return None

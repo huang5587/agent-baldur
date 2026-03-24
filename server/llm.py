@@ -16,12 +16,18 @@ from config import (
 logger = logging.getLogger(__name__)
 
 
-async def query_llm(question: str, image_bytes: bytes) -> str:
+async def query_llm(question: str, image_bytes: bytes, party_context: str = "", decisions_context: str = "") -> str:
     logger.debug("Querying LLM with model=%s, image_size=%d bytes", VISION_MODEL, len(image_bytes))
     image_b64 = base64.b64encode(image_bytes).decode("utf-8")
 
+    system = SYSTEM_PROMPT
+    if party_context:
+        system += f"\n\nThe user's current party:\n{party_context}"
+    if decisions_context:
+        system += f"\n\nKey narrative decisions made so far:\n{decisions_context}"
+
     messages = [
-        {"role": "system", "content": SYSTEM_PROMPT},
+        {"role": "system", "content": system},
         {
             "role": "user",
             "content": [
@@ -51,8 +57,13 @@ async def query_llm(question: str, image_bytes: bytes) -> str:
                 "messages": messages,
             },
         )
-        resp.raise_for_status()
         data = resp.json()
+        if resp.status_code != 200:
+            logger.error("LLM API error (HTTP %d): %s", resp.status_code, data)
+            resp.raise_for_status()
+        if "choices" not in data:
+            logger.error("LLM response missing 'choices'. model=%s, response=%s", VISION_MODEL, data)
+            raise ValueError(f"Unexpected LLM response: {data}")
         content = data["choices"][0]["message"]["content"]
         logger.debug("LLM response received: %d chars", len(content))
         return content
@@ -93,8 +104,13 @@ async def transcribe_audio(audio_bytes: bytes) -> str:
                 "messages": messages,
             },
         )
-        resp.raise_for_status()
         data = resp.json()
+        if resp.status_code != 200:
+            logger.error("Transcription API error (HTTP %d): %s", resp.status_code, data)
+            resp.raise_for_status()
+        if "choices" not in data:
+            logger.error("Transcription response missing 'choices'. model=%s, response=%s", TRANSCRIPTION_MODEL, data)
+            raise ValueError(f"Unexpected transcription response: {data}")
         transcript = data["choices"][0]["message"]["content"]
         logger.debug("Transcription complete: %d chars", len(transcript))
         return transcript

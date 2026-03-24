@@ -4,6 +4,7 @@ import Foundation
 
 let recorder = AudioRecorder()
 let screenCapture = ScreenCapture()
+
 let serverClient = ServerClient()
 
 var isRecording = false

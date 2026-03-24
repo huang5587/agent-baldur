@@ -4,7 +4,6 @@ import Foundation
 class ServerClient {
     private let serverURL = URL(string: Constants.serverURL)!
     private var audioPlayer: AVAudioPlayer?
-    private let partyManager = PartyManager()
 
     func sendRequest(audioURL: URL, imageData: Data) async throws {
         let boundary = UUID().uuidString
@@ -41,23 +40,6 @@ class ServerClient {
             let bodyStr = String(data: data, encoding: .utf8) ?? "no body"
             print("[baldur-assist] Server error (\(statusCode)): \(bodyStr)")
             return
-        }
-
-        if let textResponse = httpResponse.value(forHTTPHeaderField: Constants.headerTextResponse),
-           let decoded = textResponse.removingPercentEncoding {
-            print("[baldur-assist] LLM response: \(decoded)")
-        }
-
-        // Check for party update data
-        if let partyUpdate = httpResponse.value(forHTTPHeaderField: Constants.headerPartyUpdate),
-           let decoded = partyUpdate.removingPercentEncoding,
-           let jsonData = decoded.data(using: .utf8) {
-            do {
-                try partyManager.updateCharacter(jsonData: jsonData)
-            } catch {
-                print("[baldur-assist] Failed to update party: \(error)")
-                // Continue anyway - the voice response will still play
-            }
         }
 
         // Save and play the response audio

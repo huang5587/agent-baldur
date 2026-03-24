@@ -214,6 +214,10 @@ baldur-assist/temp/*.wav
 baldur-assist/temp/*.aiff
 baldur-assist/party.json
 
+# Save files (user data), but keep the template
+saves/*/
+!saves/template/
+
 # TTS voice cloning (user-provided)
 tts/checkpoints/
 tts/examples/

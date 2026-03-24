@@ -9,10 +9,6 @@ enum Constants {
     static let serverURL = "http://localhost:8787/ask"
     static let requestTimeoutSeconds: TimeInterval = 120
 
-    // Headers
-    static let headerTextResponse = "X-Text-Response"
-    static let headerPartyUpdate = "X-Party-Update"
-
     // Audio
     static let sampleRate: Double = 16000.0
     static let audioBufferSize: UInt32 = 4096

@@ -56,8 +56,18 @@ For arrays, extract all visible items. For booleans, use true/false.
 Return format: [{{character1}}, {{character2}}, ...]
 """
 
-# Path to party.json (relative to server directory)
-PARTY_JSON_PATH = "../baldur-assist/party.json"
+# Save management
+DEFAULT_SAVE_NAME = "default"
+
+SAVE_SWITCH_KEYWORDS = [
+    "switch to save", "load save", "switch save", "use save",
+]
+SAVE_LIST_KEYWORDS = [
+    "list saves", "list my saves", "show saves", "what saves",
+]
+SAVE_CREATE_KEYWORDS = [
+    "create save", "new save", "create a save", "make a save",
+]
 
 PARTY_UPDATE_KEYWORDS = [
     "add to party", "add to my party", "save to party", "save character",
@@ -65,5 +75,36 @@ PARTY_UPDATE_KEYWORDS = [
     "add them to my party", "add her to my party", "add him to my party",
     "save my party", "save party", "save all characters", "add my party"
 ]
+
+DECISION_RECORD_KEYWORDS = [
+    "record decision", "save decision", "remember that", "note that I",
+    "record that", "log that", "remember I", "note that we",
+    "record that I", "record that we", "save that I", "save that we",
+]
+
+DECISION_EXTRACTION_PROMPT = """\
+The user wants to record a narrative decision they made in Baldur's Gate 3.
+Extract the decision from their statement and return ONLY valid JSON (no markdown, no explanation):
+{{"decision": "short summary of the decision", "context": "brief additional context if any"}}
+
+User statement: {statement}
+"""
+
+DECISION_DETECT_PROMPT = """\
+The user asked the following question about Baldur's Gate 3. Determine if their question \
+implies they have made a specific narrative decision or choice in the game.
+
+Examples of implied decisions:
+- "What happens now that I betrayed the grove?" implies: betrayed the Emerald Grove
+- "I sided with the goblins, what should I do next?" implies: sided with the goblins
+- "Should I go to the Underdark?" implies: NO decision (just asking for advice)
+
+If a decision IS implied, return ONLY valid JSON (no markdown):
+{{"decision": "short summary", "context": "brief context"}}
+
+If NO decision is implied, return exactly: null
+
+User question: {question}
+"""
 
 SERVER_PORT = 8787

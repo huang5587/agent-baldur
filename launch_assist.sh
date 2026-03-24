@@ -8,15 +8,21 @@ source "$DIR/config.sh"
 
 # Parse CLI arguments
 VOICE_CLONE_FLAG=""
+SAVE_NAME="default"
 while [[ "$#" -gt 0 ]]; do
     case $1 in
         --voice-clone)
             VOICE_CLONE_FLAG="--voice-clone"
             echo "Voice cloning enabled"
             ;;
+        --save)
+            SAVE_NAME="$2"
+            echo "Using save: $SAVE_NAME"
+            shift
+            ;;
         *)
             echo "Unknown option: $1"
-            echo "Usage: $0 [--voice-clone]"
+            echo "Usage: $0 [--voice-clone] [--save <name>]"
             exit 1
             ;;
     esac
@@ -39,7 +45,7 @@ fi
 echo "Starting server on port $SERVER_PORT..."
 source "$DIR/.venv/bin/activate"
 cd "$DIR/server"
-python main.py $VOICE_CLONE_FLAG &
+python main.py $VOICE_CLONE_FLAG --save "$SAVE_NAME" &
 SERVER_PID=$!
 
 # Wait for server to be ready
@@ -63,4 +69,4 @@ trap cleanup SIGINT SIGTERM EXIT
 # Start the Swift hotkey app
 echo "Starting hotkey listener..."
 cd "$DIR/baldur-assist"
-./baldur-assist
+./baldur-assist --save "$SAVE_NAME"
