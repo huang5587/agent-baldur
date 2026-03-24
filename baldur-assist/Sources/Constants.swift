@@ -7,7 +7,7 @@ enum Constants {
 
     // Server
     static let serverURL = "http://localhost:8787/ask"
-    static let requestTimeoutSeconds: TimeInterval = 120
+    static let requestTimeoutSeconds: TimeInterval = 180
 
     // Audio
     static let sampleRate: Double = 16000.0

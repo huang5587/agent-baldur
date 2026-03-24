@@ -8,6 +8,7 @@ from config import (
     OPENROUTER_BASE_URL,
     OPENROUTER_CHAT_ENDPOINT,
     VISION_MODEL,
+    VISION_MODEL_FALLBACK,
     LLM_TIMEOUT_SECONDS,
     CHARACTER_EXTRACTION_PROMPT_TEMPLATE,
     PARTY_UPDATE_KEYWORDS,
@@ -190,22 +191,23 @@ def _strip_markdown(content: str) -> str:
 
 
 async def _query_text(prompt: str) -> str:
-    """Send a text-only prompt to the LLM and return the response."""
+    """Send a text-only prompt to the LLM with fallback."""
+    messages = [{"role": "user", "content": prompt}]
     async with httpx.AsyncClient(timeout=LLM_TIMEOUT_SECONDS) as client:
-        resp = await client.post(
-            f"{OPENROUTER_BASE_URL}{OPENROUTER_CHAT_ENDPOINT}",
-            headers={
-                "Authorization": f"Bearer {OPENROUTER_API_KEY}",
-                "Content-Type": "application/json",
-            },
-            json={
-                "model": VISION_MODEL,
-                "messages": [{"role": "user", "content": prompt}],
-            },
-        )
-        resp.raise_for_status()
-        data = resp.json()
-        return data["choices"][0]["message"]["content"]
+        for model in (VISION_MODEL, VISION_MODEL_FALLBACK):
+            resp = await client.post(
+                f"{OPENROUTER_BASE_URL}{OPENROUTER_CHAT_ENDPOINT}",
+                headers={
+                    "Authorization": f"Bearer {OPENROUTER_API_KEY}",
+                    "Content-Type": "application/json",
+                },
+                json={"model": model, "messages": messages},
+            )
+            data = resp.json()
+            if resp.status_code == 200 and "choices" in data:
+                return data["choices"][0]["message"]["content"]
+            logger.warning("Model %s failed (HTTP %d): %s", model, resp.status_code, data)
+        raise ValueError(f"All models failed. Last response: {data}")
 
 
 async def extract_decision(statement: str) -> dict | None:

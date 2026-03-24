@@ -30,7 +30,8 @@ MACOS_VOICE = "Moira"
 TRANSCRIPTION_PROMPT = "Transcribe this audio exactly. Return only the transcription, nothing else."
 
 # Multimodal model for game advice
-VISION_MODEL = "qwen/qwen3.5-122b-a10b"
+VISION_MODEL = "xiaomi/mimo-v2-omni"
+VISION_MODEL_FALLBACK = "qwen/qwen3.5-122b-a10b"
 
 # Audio model for transcription
 TRANSCRIPTION_MODEL = "openai/gpt-audio"

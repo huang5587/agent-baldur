@@ -6,6 +6,7 @@ from config import (
     OPENROUTER_BASE_URL,
     OPENROUTER_CHAT_ENDPOINT,
     VISION_MODEL,
+    VISION_MODEL_FALLBACK,
     TRANSCRIPTION_MODEL,
     SYSTEM_PROMPT,
     LLM_TIMEOUT_SECONDS,
@@ -14,6 +15,29 @@ from config import (
 )
 
 logger = logging.getLogger(__name__)
+
+
+async def _call_model(client: httpx.AsyncClient, model: str, messages: list[dict]) -> str:
+    """Send a chat completion request and return the response content."""
+    resp = await client.post(
+        f"{OPENROUTER_BASE_URL}{OPENROUTER_CHAT_ENDPOINT}",
+        headers={
+            "Authorization": f"Bearer {OPENROUTER_API_KEY}",
+            "Content-Type": "application/json",
+        },
+        json={
+            "model": model,
+            "messages": messages,
+        },
+    )
+    data = resp.json()
+    if resp.status_code != 200:
+        logger.error("LLM API error (HTTP %d): model=%s, response=%s", resp.status_code, model, data)
+        resp.raise_for_status()
+    if "choices" not in data:
+        logger.error("LLM response missing 'choices'. model=%s, response=%s", model, data)
+        raise ValueError(f"Unexpected LLM response: {data}")
+    return data["choices"][0]["message"]["content"]
 
 
 async def query_llm(question: str, image_bytes: bytes, party_context: str = "", decisions_context: str = "") -> str:
@@ -46,25 +70,11 @@ async def query_llm(question: str, image_bytes: bytes, party_context: str = "", 
     ]
 
     async with httpx.AsyncClient(timeout=LLM_TIMEOUT_SECONDS) as client:
-        resp = await client.post(
-            f"{OPENROUTER_BASE_URL}{OPENROUTER_CHAT_ENDPOINT}",
-            headers={
-                "Authorization": f"Bearer {OPENROUTER_API_KEY}",
-                "Content-Type": "application/json",
-            },
-            json={
-                "model": VISION_MODEL,
-                "messages": messages,
-            },
-        )
-        data = resp.json()
-        if resp.status_code != 200:
-            logger.error("LLM API error (HTTP %d): %s", resp.status_code, data)
-            resp.raise_for_status()
-        if "choices" not in data:
-            logger.error("LLM response missing 'choices'. model=%s, response=%s", VISION_MODEL, data)
-            raise ValueError(f"Unexpected LLM response: {data}")
-        content = data["choices"][0]["message"]["content"]
+        try:
+            content = await _call_model(client, VISION_MODEL, messages)
+        except Exception as e:
+            logger.warning("Primary model %s failed: %s. Falling back to %s", VISION_MODEL, e, VISION_MODEL_FALLBACK)
+            content = await _call_model(client, VISION_MODEL_FALLBACK, messages)
         logger.debug("LLM response received: %d chars", len(content))
         return content
 
